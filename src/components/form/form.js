@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 import {StyleSheet, Text, View, TextInput, Button, useColorScheme, SafeAreaView} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -11,16 +11,19 @@ import {
 export default function form() {
 
     const darkModeReducer = useSelector(state => state.darkModeReducer.value);
+    const userReducer = useSelector(state => state.userReducer.value);
     const dispatch = useDispatch();
     const [form, setForm] = useState({});
     const isDarkMode = useColorScheme() === 'dark' ? Colors.darker: Colors.lighter;
+    const getUserCallBack = useCallback(() => getUser(userReducer),[userReducer])
     useEffect(() => {
         dispatch(setDarkMode(isDarkMode))
-        getUser()
+        // getUser()
+        getUserCallBack()
     }, []);
     
 
-  const getUser = async () => {
+  const getUser = async (_) => {
     const res = await axios
       .get('https://jsonplaceholder.typicode.com/users/')
       .then(res => res.data)
@@ -28,9 +31,10 @@ export default function form() {
         // handle error
         console.log(error);
       });
+    console.log('get user');
     dispatch(addUser(res));
-    
   };
+
   const createUser = async () => {
     const res = await axios
       .post('https://jsonplaceholder.typicode.com/users', form)
@@ -66,9 +70,9 @@ export default function form() {
         placeholder="email"
         keyboardType="text"
       />
-      {/* <View style={styles.button}>
-        <Button title="Get user" onPress={getUser} />
-      </View> */}
+      <View style={styles.button}>
+        <Button title="Get user" onPress={getUserCallBack} />
+      </View>
       <View style={styles.button}>
         <Button title="Create user" onPress={createUser} />
       </View>
